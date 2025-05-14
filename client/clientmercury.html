@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запрос по протоколу Меркурий</title>
+</head>
+<style>
+    * {
+        margin: 0; padding: 0;
+    }
+</style>
+<body>
+    <div id="chat" style="display: flex; flex-direction: column">
+        <div style="display: flex; flex-direction: row">
+            <input type="text" id="ip" placeholder="ip" />
+            <p>IP-адрес</p>
+        </div>
+        <div style="display: flex; flex-direction: row">
+            <input type="text" id="port" placeholder="port" />
+            <p>TCP-порт</p>
+        </div>
+        <!-- <div style="display: flex; flex-direction: row">
+            <input type="text" id="adr" placeholder="adr" />
+            <p>Связной адрес</p>
+        </div> -->
+        <div>
+            <p>43728456 10.78.178.228:4001</p>
+            <p>Tx: 38_01_02_32_32_32_32_32_32_DD_29_ связной номер 56 = 38_ запрос на соединение = 01_ уровень доступа = 02_ пароль "222222" = 32_32_32_32_32_32_ crc16 = DD_29_</p>
+            <p>Rx: 38 00 12 70</p>
+            <p>Tx: 38_04_00_F2_CD_ текущее время</p>
+            <p>Rx: 38_51_45_15_01_28_04_25_01_45_31_ ответ 15:45:51 пн 28.04.25 зима</p>
+            <p>Tx: 38_08_00_F7_CD_ серийный номер ПУ и дата выпуска</p>
+            <p>Rx: 38 2b 48 54 38 04 02 15 6b f1 номер 43728456 дата 04.02.21</p>
+            <p>СПОДЭС 7e a0 08 02 CF 61 53 D5 48 7e 10.78.44.17:4001</p>
+        </div>
+        <input type="text" id="message" placeholder="Введите сообщение" />
+        <button onclick="sendMessage()">Отправить</button>
+        <div id="messages"></div>        
+    </div>
+
+    <script>
+        const hostname = window.location.hostname;
+        const socket = new WebSocket(`ws://${hostname}:5000`);
+        const messagesDiv = document.getElementById('messages');
+        const messageip = document.getElementById('ip');
+        const messageport = document.getElementById('port');
+        const messageadr = document.getElementById('adr');
+        const messageInput = document.getElementById('message');        
+
+        socket.onmessage = function(event) {
+            const message = event.data;
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+        };
+
+        socket.onopen = function(event) {
+            const message = event.data;
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `WebSocket opened`;
+            messagesDiv.appendChild(messageElement);
+        };
+
+        socket.onclose = function(event) {
+            const message = event.data;
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `WebSocket closed`;
+            messagesDiv.appendChild(messageElement);
+        };
+
+        function sendMessage() {
+            const message = messageip.value + ':' + messageport.value + ' Tx: ' + messageInput.value;
+            if (message) {                
+                socket.send(message);                
+                messageInput.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
